@@ -15,7 +15,8 @@ class ProductoController extends Controller
 
     public function create()
     {
-        return view('productos.create');
+        $categorias = \App\Models\Categoria::all();
+        return view('productos.create', compact('categorias'));
     }
 
     public function store(Request $request)
@@ -24,13 +25,12 @@ class ProductoController extends Controller
             'nombre' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
             'precio' => 'required|numeric|min:0',
-            'stock' => 'required|integer|min:0',
+            'categoria_id' => 'required|exists:categorias,id',
         ]);
 
         Producto::create($validated);
         return redirect()->route('productos.index')->with('success', 'Producto creado con éxito.');
     }
-
     /**
      * Display the specified resource.
      */
@@ -42,24 +42,33 @@ class ProductoController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Producto $producto)
+    public function edit($id)
     {
-        //
+        $producto = \App\Models\Producto::findOrFail($id);
+        $categorias = \App\Models\Categoria::all();
+        return view('productos.edit', compact('producto', 'categorias'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Producto $producto)
+    public function update(Request $request, $id)
     {
-        //
+        $validated = $request->validate([
+            'nombre' => 'required|string|max:255',
+            'descripcion' => 'nullable|string',
+            'precio' => 'required|numeric|min:0',
+            'categoria_id' => 'required|exists:categorias,id',
+        ]);
+
+        $producto = \App\Models\Producto::findOrFail($id);
+        $producto->update($validated);
+
+        return redirect()->route('productos.index')->with('success', 'Producto actualizado con éxito.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Producto $producto)
+    public function destroy($id)
     {
-        //
+        $producto = \App\Models\Producto::findOrFail($id);
+        $producto->delete();
+
+        return redirect()->route('productos.index')->with('success', 'Producto eliminado con éxito.');
     }
 }
